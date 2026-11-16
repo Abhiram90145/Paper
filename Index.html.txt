@@ -73,12 +73,6 @@ nav a:hover {
     line-height: 1.6;
 }
 
-.hero button {
-    margin-top: 22px;
-    padding: 13px 25px;
-    background: #4B2E22;
-}
-
 /* SECTION TITLE */
 .section-title {
     text-align: center;
@@ -92,6 +86,41 @@ nav a:hover {
     color: #80644F;
     margin-bottom: 20px;
     line-height: 1.8;
+}
+
+/* SEARCH, FILTER & SORT */
+.product-tools {
+    max-width: 1150px;
+    margin: 25px auto 0;
+    padding: 0 25px;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 15px;
+}
+
+.product-tools input,
+.product-tools select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #C9B49D;
+    border-radius: 7px;
+    background: #FFFCF6;
+    color: #3E2B23;
+    font-size: 15px;
+}
+
+.product-tools input:focus,
+.product-tools select:focus {
+    outline: 2px solid #A66B3F;
+}
+
+.no-products {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 30px;
+    color: #80644F;
+    background: #FFFCF6;
+    border-radius: 10px;
 }
 
 /* PRODUCTS */
@@ -205,10 +234,6 @@ button:hover {
     padding: 13px 25px;
 }
 
-.checkout:hover {
-    background: #784626;
-}
-
 /* FOOTER */
 footer {
     background: #4B2E22;
@@ -218,7 +243,6 @@ footer {
     margin-top: 35px;
 }
 
-/* CONTACT DETAILS */
 .contact-details {
     margin: 22px auto 0;
     padding-top: 18px;
@@ -237,14 +261,15 @@ footer {
     text-decoration: none;
 }
 
-.contact-details a:hover {
-    text-decoration: underline;
-}
-
 /* RESPONSIVE DESIGN */
 @media (max-width: 768px) {
     .products {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .product-tools {
+        grid-template-columns: 1fr;
+        padding: 0 15px;
     }
 
     nav a {
@@ -308,7 +333,6 @@ footer {
 
     <p style="margin-top:14px; font-weight:bold; color:#5B6B3A;">
         “Choose Paper, Protect Nature.”
-      
     </p>
 
     <button onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">
@@ -327,6 +351,35 @@ footer {
         Sustainable packaging for a better tomorrow 🌱<br>
         “Reduce Plastic. Choose Paper. Keep the Planet Cleaner.”
     </p>
+
+    <!-- SEARCH, CATEGORY FILTER & SORT -->
+
+    <section class="product-tools">
+
+        <input
+            type="search"
+            id="search-input"
+            placeholder="Search products by name..."
+            aria-label="Search products by name"
+        >
+
+        <select id="category-filter">
+            <option value="all">All Categories</option>
+            <option value="Paper Bottle">Paper Bottle</option>
+            <option value="Paper Cup">Paper Cup</option>
+            <option value="Double Wall Cup">Double Wall Cup</option>
+            <option value="Paper Bowl">Paper Bowl</option>
+            <option value="Paper Bag">Paper Bag</option>
+        </select>
+
+        <select id="sort-by">
+            <option value="default">Sort: Default</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="name-az">Name: A to Z</option>
+        </select>
+
+    </section>
 
     <div class="products" id="product-list"></div>
 
@@ -364,16 +417,11 @@ footer {
 
         <h3>Contact Details</h3>
 
-        <p>
-            <strong>Name:</strong>
-            Abhiram Nagarjuna
-        </p>
+        <p><strong>Name:</strong> Abhiram Nagarjuna</p>
 
         <p>
             <strong>Mobile:</strong>
-            <a href="tel:+919014526903">
-                +91 9014526903
-            </a>
+            <a href="tel:+919014526903">+91 9014526903</a>
         </p>
 
         <p>
@@ -383,15 +431,9 @@ footer {
             </a>
         </p>
 
+        <p><strong>Pincode:</strong> 507001</p>
 
-        <p><strong>Pincode:</strong>
-            507001
-        </p>
-
-
-            <strong>Address:</strong>
-            Khammam, Telangana, India
-        </p>
+        <p><strong>Address:</strong> Khammam, Telangana, India</p>
 
     </div>
 
@@ -530,49 +572,114 @@ const products = [
 
 let cart = [];
 
-// DISPLAY PRODUCTS
+// SEARCH, FILTER, SORT & DISPLAY PRODUCTS
 
 function displayProducts() {
 
-    const productList =
-        document.getElementById("product-list");
+    const productList = document.getElementById("product-list");
 
-    productList.innerHTML = "";
+    const searchText = document.getElementById("search-input").value
+        .trim()
+        .toLowerCase();
 
-    products.forEach(product => {
+    const selectedCategory =
+        document.getElementById("category-filter").value;
 
-        productList.innerHTML += `
+    const sortOption =
+        document.getElementById("sort-by").value;
 
-            <div class="product-card">
+    // FILTER PRODUCTS USING filter()
 
-                <img
-                    src="${product.image}"
-                    alt="${product.name}"
-                    loading="lazy"
-                    onerror="this.onerror=null;this.src='https://placehold.co/400x300/F5EBDD/654331?text=Eco+Paper+Product';"
-                >
+    let filteredProducts = products.filter(product => {
 
-                <h3>${product.name}</h3>
+        const matchesName =
+            product.name.toLowerCase().includes(searchText);
 
-                <p>Size: ${product.size}</p>
+        const matchesCategory =
+            selectedCategory === "all" ||
+            product.category === selectedCategory;
 
-                <p>Category: ${product.category}</p>
-
-                <p>Material: ${product.material}</p>
-
-                <p class="price">₹${product.price}</p>
-
-                <button onclick="addToCart(${product.id})">
-                    Add to Cart
-                </button>
-
-            </div>
-
-        `;
+        return matchesName && matchesCategory;
 
     });
 
+    // SORT PRODUCTS USING sort()
+
+    if (sortOption === "price-low") {
+
+        filteredProducts.sort((a, b) => a.price - b.price);
+
+    } else if (sortOption === "price-high") {
+
+        filteredProducts.sort((a, b) => b.price - a.price);
+
+    } else if (sortOption === "name-az") {
+
+        filteredProducts.sort((a, b) =>
+            a.name.localeCompare(b.name)
+        );
+
+    }
+
+    // DISPLAY NO RESULTS MESSAGE
+
+    if (filteredProducts.length === 0) {
+
+        productList.innerHTML =
+            '<p class="no-products">No products found. Try another search or category.</p>';
+
+        return;
+
+    }
+
+    // DISPLAY PRODUCTS USING map()
+
+    productList.innerHTML = filteredProducts.map(product => `
+
+        <div class="product-card">
+
+            <img
+                src="${product.image}"
+                alt="${product.name}"
+                loading="lazy"
+                onerror="this.onerror=null;this.src='https://placehold.co/400x300/F5EBDD/654331?text=Eco+Paper+Product';"
+            >
+
+            <h3>${product.name}</h3>
+
+            <p>Size: ${product.size}</p>
+
+            <p>Category: ${product.category}</p>
+
+            <p>Material: ${product.material}</p>
+
+            <p class="price">₹${product.price}</p>
+
+            <button onclick="addToCart(${product.id})">
+                Add to Cart
+            </button>
+
+        </div>
+
+    `).join("");
+
 }
+
+// SEARCH EVENT
+
+document.getElementById("search-input")
+    .addEventListener("input", displayProducts);
+
+// CATEGORY FILTER EVENT
+
+document.getElementById("category-filter")
+    .addEventListener("change", displayProducts);
+
+// SORT EVENT
+
+document.getElementById("sort-by")
+    .addEventListener("change", displayProducts);
+
 
 // ADD TO CART
 
@@ -599,6 +706,7 @@ function addToCart(id) {
 
 }
 
+
 // INCREASE QUANTITY
 
 function increaseQuantity(id) {
@@ -612,6 +720,7 @@ function increaseQuantity(id) {
     updateCart();
 
 }
+
 
 // DECREASE QUANTITY
 
@@ -633,18 +742,16 @@ function decreaseQuantity(id) {
 
 }
 
+
 // UPDATE CART
 
 function updateCart() {
 
-    const cartItems =
-        document.getElementById("cart-items");
+    const cartItems = document.getElementById("cart-items");
 
-    const cartCount =
-        document.getElementById("cart-count");
+    const cartCount = document.getElementById("cart-count");
 
-    const totalPrice =
-        document.getElementById("total-price");
+    const totalPrice = document.getElementById("total-price");
 
     cartItems.innerHTML = "";
 
@@ -653,8 +760,7 @@ function updateCart() {
 
     if (cart.length === 0) {
 
-        cartItems.innerHTML =
-            "<p>Your cart is empty.</p>";
+        cartItems.innerHTML = "<p>Your cart is empty.</p>";
 
     }
 
@@ -702,9 +808,11 @@ function updateCart() {
     });
 
     cartCount.textContent = count;
+
     totalPrice.textContent = total;
 
 }
+
 
 // CHECKOUT
 
@@ -734,9 +842,11 @@ function checkout() {
 
 }
 
+
 // INITIALIZE WEBSITE
 
 displayProducts();
+
 updateCart();
 
 </script>
